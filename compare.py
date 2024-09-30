@@ -285,7 +285,7 @@ def compare_parameter(dsid, param_s2, param_s1):
         if param_s2[key] != param_s1[key]:
           logger.info(msgo)
           logger.info(f"{2*indent}val_{opts['s2']} = {param_s2[key]} != val_{opts['s1']} = {param_s1[key]}")
-      elif type(param_s2[key]) is not type(param_s1[key]):
+      elif isinstance(param_s2[key], type(param_s1[key])):
         logger.info(msgo)
         msg = f"{2*indent}type_{opts['s2']} = {type(param_s2[key])} != type_{opts['s1']} = {type(param_s1[key])}"
         if opts['mode'] == 'update':
