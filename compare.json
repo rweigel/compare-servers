@@ -1,0 +1,59 @@
+{
+  "SSCWeb": {
+    "compare_data": true,
+    "parallel": false,
+    "mode": "exact",
+    "sample_duration": {"days": 1},
+    "s1": "chunk",
+    "s2": "chunk-ltfloats-parallel",
+    "url1": "https://hapi-server.org/servers/SSCWeb/hapi",
+    "url2": "http://localhost:8999/SSCWeb/hapi",
+    "s1_expire_after": {"days": 1},
+    "s2_expire_after": {"days": 1}
+  },
+  "CDAWeb": {
+    "compare_data": false,
+    "parallel": false,
+    "mode": "exact",
+    "warn": false,
+    "s1": "nl",
+    "s2": "jf",
+    "url1": "https://cdaweb.gsfc.nasa.gov/hapi",
+    "url2": "https://cottagesystems.com/server/cdaweb/hapi",
+    "s1_expire_after": {"days": 1},
+    "s2_expire_after": {"days": 1},
+    "s1_omits": ["stopDate"],
+    "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence"],
+    "sample_duration": {"days": 1}
+  },
+  "CDAWeb-files": {
+    "compare_data": false,
+    "parallel": false,
+    "mode": "exact",
+    "warn": false,
+    "s1": "nl",
+    "s2": "jf",
+    "url1": "https://cdaweb.gsfc.nasa.gov/hapi",
+    "url2": "https://cottagesystems.com/server/cdaweb-files/hapi",
+    "s1_expire_after": {"days": 1},
+    "s2_expire_after": {"days": 1},
+    "s1_omits": ["stopDate"],
+    "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence"],
+    "sample_duration": {"days": 1}
+  },
+  "CDAWeb-metadata": {
+    "compare_data": false,
+    "parallel": false,
+    "mode": "exact",
+    "warn": true,
+    "s1": "nl",
+    "s2": "bw",
+    "url1": "https://cdaweb.gsfc.nasa.gov/hapi",
+    "url2": "../cdawmeta/data/hapi/catalog-all.json",
+    "s1_expire_after": {"days": 1},
+    "s2_expire_after": null,
+    "s1_omits": ["stopDate"],
+    "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence"],
+    "sample_duration": {"days": 1}
+  }
+}
