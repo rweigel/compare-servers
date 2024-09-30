@@ -218,7 +218,7 @@ def compare_info(dsid, info_s2, info_s1):
 
   if n_keys_s2 != n_keys_s1:
     logger.error(f'{indent}n_keys_{opts["s2"]} = {n_keys_s2} != n_keys_{opts["s1"]} = {n_keys_s1}')
-    logger.error(f"{2*indent}Differences: {set(keys_s1) ^ set(keys_s2)}",'info')
+    logger.error(f"{2*indent}Differences: {set(keys_s1) ^ set(keys_s2)}")
   else:
     common_keys = set(keys_s2) & set(keys_s1)
     for key in common_keys:
@@ -281,11 +281,11 @@ def compare_parameter(dsid, param_s2, param_s1):
               logger.warning(msg)
             else:
               logger.error(msg)
-      elif key == 'size' and isinstance(param_s2[key],list) and isinstance(param_s1[key],list):
+      elif key == 'size' and isinstance(param_s2[key],list) and isinstance(param_s1[key], list):
         if param_s2[key] != param_s1[key]:
           logger.info(msgo)
           logger.info(f"{2*indent}val_{opts['s2']} = {param_s2[key]} != val_{opts['s1']} = {param_s1[key]}")
-      elif isinstance(param_s2[key], type(param_s1[key])):
+      elif type(param_s2[key]) != type(param_s1[key]):
         logger.info(msgo)
         msg = f"{2*indent}type_{opts['s2']} = {type(param_s2[key])} != type_{opts['s1']} = {type(param_s1[key])}"
         if opts['mode'] == 'update':
