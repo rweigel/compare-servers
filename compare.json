@@ -50,10 +50,10 @@
     "s2": "bw",
     "url1": "https://cdaweb.gsfc.nasa.gov/hapi",
     "url2": "../cdawmeta/data/hapi/catalog-all.json",
-    "s1_expire_after": {"days": 1},
+    "s1_expire_after": null,
     "s2_expire_after": null,
     "s1_omits": ["stopDate"],
-    "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence"],
+    "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence", "maxRequestDuration"],
     "sample_duration": {"days": 1}
   }
 }

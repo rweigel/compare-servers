@@ -80,11 +80,11 @@ def cli(config):
 
   return args
 
-def _logger(log_level, conf):
+def _logger(log_level, data_dir, conf_name):
   logger_ = {
       "name": "compare",
-      "file_log": f"{opts['data_dir']}/compare.{conf}.log",
-      "file_error": f"{opts['data_dir']}/compare.{conf}.error.log",
+      "file_log": f"{data_dir}/compare.{conf_name}.log",
+      "file_error": f"{data_dir}/compare.{conf_name}.error.log",
       "console_format": "%(name)s %(levelname)s %(message)s",
       "color": True,
       "debug_logger": False
@@ -473,6 +473,9 @@ def remove_keys(keys, s, opts):
 
 def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
 
+  if expire_after is None:
+    expire_after = {"days": 0}
+
   # Could do these in parallel.
 
   def server_dir(url):
@@ -576,7 +579,7 @@ opts = config[args['conf']]
 opts['data_dir'] = args['data_dir']
 opts.update(args)
 
-logger = _logger(args['log_level'], opts)
+logger = _logger(args['log_level'], args['data_dir'], args['conf'])
 logger.info(f"Logging output to {opts['data_dir']}")
 logger.info(f"Cache directory: {opts['data_dir']}")
 
@@ -598,8 +601,22 @@ if opts['mode'] == 'update':
   logger.info("Updated server")
 logger.info(f"  {opts['s2']} = {opts['url2']}")
 
-datasets_s1o = get_all_metadata(opts['url1'], opts['s1'], expire_after=opts['s1_expire_after'])
-datasets_s2o = get_all_metadata(opts['url2'], opts['s2'], expire_after=opts['s2_expire_after'])
+cache1 = f"{opts['data_dir']}/cache/catalog-all.{opts['s1']}.pkl"
+cache2 = f"{opts['data_dir']}/cache/catalog-all.{opts['s2']}.pkl"
+
+if opts['id'] is None and opts['s1_expire_after'] is None and os.path.exists(cache1):
+  datasets_s1o = utilrsw.read(cache1, logger=logger)
+else:
+  datasets_s1o = get_all_metadata(opts['url1'], opts['s1'], expire_after=opts['s1_expire_after'])
+
+if opts['id'] is None and opts['s2_expire_after'] is None and os.path.exists(cache2):
+  datasets_s2o = utilrsw.read(cache2, logger=logger)
+else:
+  datasets_s2o = get_all_metadata(opts['url2'], opts['s2'], expire_after=opts['s2_expire_after'])
+
+if opts['id'] is None:
+  utilrsw.write(cache1, datasets_s1o, logger=logger)
+  utilrsw.write(cache2, datasets_s2o, logger=logger)
 
 logger.info("")
 
