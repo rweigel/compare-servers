@@ -3,15 +3,18 @@ import copy
 import time
 import json
 import datetime
-from urllib.parse import urlparse
-
 import requests
 import requests_cache
 import urllib3
 import deepdiff
 
-from hapiclient import hapitime2datetime
+from urllib.parse import urlparse
+
 import utilrsw
+from hapiclient import hapitime2datetime
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, message=".*infer_datetime_format")
 
 def cli(config):
   data_dir = os.path.join(os.path.dirname(__file__), 'data')
@@ -129,6 +132,7 @@ def compare_metadata(datasets_s1, datasets_s2, opts):
         logger.error(indent + msg)
       dsid0 = dsid + "@0"
       if dsid[-2] != "@" and dsid0 in list(datasets_s1.keys()):
+        logger.info(f"{dsid}")
         logger.error(f"{indent}But {dsid0} in {opts['s1']}")
 
   for dsid in datasets_s1.keys():
@@ -228,11 +232,11 @@ def compare_info(dsid, info_s2, info_s1):
           date2 = hapitime2datetime(info_s2[key])[0]
           if date1 != date2:
             msg = f'{indent}{key} (datetime comparison) val_{opts["s2"]} = {info_s2[key]} '
-            msg += '!= val_{opts["s1"]} = {info_s1[key]}'
+            msg += f'!= val_{opts["s1"]} = {info_s1[key]}'
             logger.error(msg)
           elif args['warn']:
             msg = f'{indent}{key} val_{opts["s2"]} = {info_s2[key]} != '
-            msg += 'val_{opts["s1"]} = {info_s1[key]} but datetime equivalent.'
+            msg += f'val_{opts["s1"]} = {info_s1[key]} but datetime equivalent.'
             logger.warning(msg)
         else:
           msg = f'{indent}{key} val_{opts["s2"]} = {info_s2[key]} != val_{opts["s1"]} = {info_s1[key]}'
@@ -476,7 +480,11 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
   if expire_after is None:
     expire_after = {"days": 0}
 
-  # Could do these in parallel.
+  logger.info("\n")
+  if expire_after == -1:
+    logger.info(f"{server_name}: Not using CachedSession()")
+  else:
+    logger.info(f"{server_name}: Using expire_after = {expire_after}")
 
   def server_dir(url):
     url_parts = urlparse(url)
@@ -494,24 +502,28 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
   cache_dir = server_dir(server_url)
   logger.info("Getting catalog and info metadata")
 
-  def CachedSession():
+  def CachedSession(expire_after):
     # https://requests-cache.readthedocs.io/en/stable/#settings
     # https://requests-cache.readthedocs.io/en/stable/user_guide/headers.html
     copts = {
-      "cache_control": True,                # Use Cache-Control response headers for expiration, if available
+      "cache_control": True,    # Use Cache-Control response headers for expiration, if available
       "expire_after": datetime.timedelta(**expire_after), # Otherwise expire after this
-      "allowable_codes": [200],             # Cache responses with these status codes
-      "stale_if_error": False,              # In case of request errors, use stale cache data if possible
+      "allowable_codes": [200], # Cache responses with these status codes
+      "stale_if_error": False,  # In case of request errors, use stale cache data if possible
       "backend": "filesystem"
     }
     return requests_cache.CachedSession(cache_dir, **copts)
 
-  session = CachedSession()
+  if expire_after == -1:
+    session = requests.Session()
+  else:
+    session = CachedSession(expire_after)
 
   urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
   resp = session.request('get', server_url + '/catalog', verify=False)
   datasets = resp.json()['catalog']
 
+  # Could do these in parallel.
   for dataset in datasets:
     id = dataset['id']
     if omit(id):
@@ -522,7 +534,7 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
     start = time.time()
     logger.info(f'  Getting {server_name}: {url}')
     resp = session.request('get', url, verify=False)
-    if resp.from_cache:
+    if 'from_cache' in resp and resp.from_cache:
       logger.info(f'  Got: (from cache) {url}')
       file_cache = os.path.join(cache_dir, resp.cache_key + ".json")
       logger.info(f'  Cache file: {file_cache}')
@@ -531,11 +543,14 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
       logger.info(f'  Got: (time = {dt} [s]) {url}')
 
     if resp.status_code != 200:
+      logger.error(f'  HTTP status code = {resp.status_code} != 200')
       continue
 
     dataset['info'] = resp.json()
-    del dataset['info']['status']
-    del dataset['info']['HAPI']
+    if 'status' in dataset['info']:
+      del dataset['info']['status']
+    if 'HAPI' in dataset['info']:
+      del dataset['info']['HAPI']
 
   return datasets
 
