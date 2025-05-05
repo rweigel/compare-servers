@@ -5,7 +5,7 @@ install_requires = [
     "urllib3",
     "requests",
     "hapiclient",
-    "requests_cache==1.2"
+    "requests_cache>=1.2.1"
 ]
 
 try:
