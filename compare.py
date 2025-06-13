@@ -168,14 +168,15 @@ def compare_metadata(datasets_s1, datasets_s2, opts):
       if n_params_s2 != n_params_s1:
         m = min(n_params_s2, n_params_s1)
         if list(keys_s1)[0:m] != list(keys_s2)[0:m]:
-          logger.error(f"{indent}n_params_{opts['s2']} = {n_params_s2} != n_params_{opts['s1']} = {n_params_s1} {extra}")
+          logger.error(f"{indent}n_params_{opts['s1']} = {n_params_s1} != n_params_{opts['s2']} = {n_params_s2} {extra}")
           logger.error(f"{2*indent}Differences: {set(keys_s1) ^ set(keys_s2)}")
           logger.error(f"{2*indent}Error because first {m} parameters are not identical.")
         else:
-          msgo = f"{2*indent}n_params_{opts['s2']} = {n_params_s2} > n_params_{opts['s1']} = {n_params_s1}. {extra}"
+          logger.info(f"{2*indent}First {m} parameters are identical.")
+          msgo = f"{2*indent}n_params_{opts['s1']} = {n_params_s1} < n_params_{opts['s2']} = {n_params_s2}. {extra}"
           msgw = f"{3*indent}Warning b/c first {m} parameters are same & mode = 'update'"
           msgx = f"{3*indent}Differences: {set(keys_s1) ^ set(keys_s2)}"
-          if n_params_s2 > n_params_s1:
+          if n_params_s1 < n_params_s2:
             if opts['mode'] != 'update':
               logger.error(msgo)
               logger.error(msgx)
@@ -184,14 +185,9 @@ def compare_metadata(datasets_s1, datasets_s2, opts):
               logger.warning(msgw)
               logger.warning(msgx)
           else:
-            msgo = msgo.replace(" > ", " < ")
-            if opts['mode'] != 'update':
-              logger.error(msgo)
-              logger.error(msgx)
-            else:
-              logger.warning(msgo)
-              logger.warning(msgw)
-              logger.warning(msgx)
+            msgo = msgo.replace(" < ", " > ")
+            logger.error(msgo)
+            logger.error(msgx)
 
           parameters = list(keys_s1)[0:m]
           compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=parameters)
