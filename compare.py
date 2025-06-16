@@ -140,7 +140,7 @@ def compare_metadata(datasets_s1, datasets_s2, opts):
     if omit(dsid):
       continue
 
-    logger.info(f"{dsid}")
+    logger.info(f"{dsid} - Checking metadata")
 
     extra = ""
     if "x_cdf_depend_0_name" in datasets_s1[dsid]["info"]["parameters"][0]:
@@ -452,6 +452,10 @@ def compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=""):
     n = 0
     for i in range(min(len(body1s), len(body2s))):
       if body1s[i] != body2s[i]:
+        if opts['s1'] == 'nl' and body1s[i].startswith('{'):
+          if opts['s2'] == 'jf' and body2s[i][0].isdigit():
+            logger.error(f"    {opts['s1_padded']} data line {i} starts with '{{' but {opts['s2_padded']} data line {i} starts with a digit.")
+            break
         msg = f"  Line {i}:"
         logger.error(msg)
         logger.error(f"    {opts['s1_padded']}: {body1s[i]}")
