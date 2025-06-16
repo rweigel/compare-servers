@@ -20,7 +20,7 @@
     "s2": "jf",
     "url1": "https://cdaweb.gsfc.nasa.gov/hapi",
     "url2": "https://cottagesystems.com/server/cdaweb/hapi",
-    "s1_expire_after": {"days": 1},
+    "s1_expire_after": -1,
     "s2_expire_after": -1,
     "s1_omits": ["stopDate"],
     "s2_omits": ["stopDate", "sampleStartDate", "sampleStopDate", "cadence", "maxRequestDuration", "modificationDate", "unitsSchema"],
