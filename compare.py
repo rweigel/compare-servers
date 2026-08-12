@@ -16,6 +16,9 @@ from hapiclient import hapitime2datetime
 import warnings
 warnings.filterwarnings("ignore", category=UserWarning, message=".*infer_datetime_format")
 
+ACCEPT_ENCODING = {"Accept-Encoding": "gzip"}
+#ACCEPT_ENCODING = {"Accept-Encoding": "identity"}
+
 def cli(config):
   data_dir = os.path.join(os.path.dirname(__file__), 'data')
 
@@ -83,6 +86,7 @@ def cli(config):
 
   return args
 
+
 def _logger(log_level, data_dir, conf_name):
   logger_ = {
       "name": "compare",
@@ -101,6 +105,7 @@ def _logger(log_level, data_dir, conf_name):
 
   return logger
 
+
 def omit(id):
   # TODO: This is a copy of function in cdaweb.py. Move to a common module.
   import re
@@ -112,6 +117,7 @@ def omit(id):
     return True
   else:
     return False
+
 
 def compare_metadata(datasets_s1, datasets_s2, opts):
 
@@ -204,6 +210,7 @@ def compare_metadata(datasets_s1, datasets_s2, opts):
 
           compare_data(dsid, datasets_s1, datasets_s2, opts)
 
+
 def compare_info(dsid, info_s2, info_s1):
 
   indent = "  "
@@ -237,6 +244,7 @@ def compare_info(dsid, info_s2, info_s1):
         else:
           msg = f'{indent}{key} val_{opts["s2"]} = {info_s2[key]} != val_{opts["s1"]} = {info_s1[key]}'
           logger.error(msg)
+
 
 def compare_parameter(dsid, param_s2, param_s1):
 
@@ -315,6 +323,7 @@ def compare_parameter(dsid, param_s2, param_s1):
 
   compare_bins(param_s2, param_s1)
 
+
 def compare_bins(params_s2, params_s1):
 
   name_s2 = params_s2["name"]
@@ -340,13 +349,17 @@ def compare_bins(params_s2, params_s1):
         logger.error(f"{opts['s1']} has {n_bins_s1} bins objects; {opts['s2']} has {n_bins_s2}")
       # TODO: Compare content at bins level
 
+
 def compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=""):
 
   if opts['compare_data'] is False:
+    logger.info("  Skipping data comparison because --compare-data not given on command line.")
     return
   if dsid not in datasets_s1:
+    logger.info("  Skipping data comparison because dataset not in " + opts['s1'])
     return
   if dsid not in datasets_s2:
+    logger.info("  Skipping data comparison because dataset not in " + opts['s2'])
     return
 
   sampleStartDate = None
@@ -359,7 +372,7 @@ def compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=""):
 
   if 'sampleStopDate' in datasets_s2[dsid]['info']:
     sampleStopDate = datasets_s2[dsid]['info']['sampleStopDate']
-  if 'sampleStartDate' in datasets_s1[dsid]['info']:
+  if 'sampleStopDate' in datasets_s1[dsid]['info']:
     sampleStopDate = datasets_s1[dsid]['info']['sampleStopDate']
 
   if sampleStartDate is None or sampleStopDate is None:
@@ -388,7 +401,7 @@ def compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=""):
   def get(i):
     start = time.time()
     logger.info("  Getting: " + urls[i])
-    resps[i] = requests.get(urls[i], verify=False)
+    resps[i] = requests.get(urls[i], headers=ACCEPT_ENCODING, verify=False)
     times[i] = time.time() - start
 
   logger.info(f"{dsid} - Checking data")
@@ -465,6 +478,7 @@ def compare_data(dsid, datasets_s1, datasets_s2, opts, parameters=""):
           logger.error("  More than 10 lines differ; not displaying more.")
           break
 
+
 def remove_keys(keys, s, opts):
   for key in keys.copy():
     if f'{s}_omits' in opts and key in opts[f'{s}_omits']:
@@ -474,6 +488,7 @@ def remove_keys(keys, s, opts):
     if key in ['_parameters', 'parameters']:
       keys.remove(key)
   return keys
+
 
 def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
 
@@ -518,6 +533,7 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
     session = requests.Session()
   else:
     session = CachedSession(expire_after)
+  session.headers.update(ACCEPT_ENCODING)
 
   urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
   resp = session.request('get', server_url + '/catalog', verify=False)
@@ -554,6 +570,7 @@ def get_all_metadata(server_url, server_name, expire_after={"days": 1}):
 
   return datasets
 
+
 def restructure(datasets, svr):
   """Create _parameters dict with keys of parameter name."""
   datasetsr = {}
@@ -572,6 +589,7 @@ def restructure(datasets, svr):
       datasetsr[id]["info"]["_parameters"][name] = parameter
   return datasetsr
 
+
 def pad_server_name(opts):
   l1 = len(opts['s1'])
   l2 = len(opts['s2'])
@@ -583,6 +601,7 @@ def pad_server_name(opts):
     opts['s1_padded'] = opts['s1'] + ' '*(l2-l1)
 
   return opts
+
 
 # Read configuration
 fname = os.path.join(os.path.dirname(__file__), 'compare.json')

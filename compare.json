@@ -1,18 +1,16 @@
 {
   "SSCWeb": {
-    "compare_data": true,
     "parallel": false,
     "mode": "exact",
     "sample_duration": {"days": 1},
-    "s1": "chunk",
-    "s2": "chunk-ltfloats-parallel",
+    "s1": "no-gzip",
+    "s2": "gzip",
     "url1": "https://hapi-server.org/servers/SSCWeb/hapi",
     "url2": "http://localhost:8999/SSCWeb/hapi",
     "s1_expire_after": {"days": 1},
     "s2_expire_after": {"days": 1}
   },
   "CDAWeb": {
-    "compare_data": false,
     "parallel": false,
     "mode": "exact",
     "warn": false,
@@ -27,7 +25,6 @@
     "sample_duration": {"days": 1}
   },
   "CDAWeb-files": {
-    "compare_data": false,
     "parallel": false,
     "mode": "exact",
     "warn": false,
@@ -42,7 +39,6 @@
     "sample_duration": {"days": 1}
   },
   "CDAWeb-metadata": {
-    "compare_data": false,
     "parallel": false,
     "mode": "exact",
     "warn": true,
